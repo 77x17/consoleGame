@@ -1,0 +1,26 @@
+# depslib dependency file v1.0
+1641311396 source:e:\cpp\anothercode\game\projecttest\tester\main.cpp
+	<bits/stdc++.h>
+	"buildWindow.h"
+	"2048.h"
+
+1641311720 e:\cpp\anothercode\game\projecttest\tester\buildwindow.h
+	<conio.h>
+	<windows.h>
+
+1641311164 e:\cpp\anothercode\game\projecttest\tester\2048.h
+
+1641480803 source:e:\cpp\anothercode\game\2048\project\main.cpp
+	<bits/stdc++.h>
+	"buildWindow.h"
+	"2048.h"
+	"menu.h"
+
+1641481222 e:\cpp\anothercode\game\2048\project\buildwindow.h
+	<conio.h>
+	<windows.h>
+
+1641480113 e:\cpp\anothercode\game\2048\project\2048.h
+
+1641481201 e:\cpp\anothercode\game\2048\project\menu.h
+
