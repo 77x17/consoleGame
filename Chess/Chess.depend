@@ -1,0 +1,21 @@
+# depslib dependency file v1.0
+1667406446 source:e:\code\consolegame\chess\main.cpp
+	<iostream>
+	"Setting.h"
+	"Color.h"
+	"redefineCommand.h"
+	"Chess.h"
+
+1667406320 e:\code\consolegame\chess\setting.h
+	<windows.h>
+
+1667406466 e:\code\consolegame\chess\redefinecommand.h
+
+1667407568 e:\code\consolegame\chess\chess.h
+	<conio.h>
+	<fstream>
+	<cstring>
+	<utility>
+
+1667406665 e:\code\consolegame\chess\color.h
+
