@@ -1,8 +1,6 @@
 #include <iostream>
 
 #include "Setting.h"
-#include "Color.h"
-#include "redefineCommand.h"
 #include "Chess.h"
 
 int main() {

@@ -1,4 +1,6 @@
 #include <windows.h>
+#include "Color.h"
+#include "redefineCommand.h"
 
 namespace Setting {
     void windowSetting(SHORT height, SHORT width, bool disableResize) {

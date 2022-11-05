@@ -10,8 +10,7 @@
 const int dx[] = {-1, 1, 0, 0};
 const int dy[] = {0, 0, -1, 1};
 
-namespace Chess {
-    std::string board[] = {
+std::string board[] = {
        "##########",
        "#RNBQKBNR#",
        "#PPPPPPPP#",
@@ -23,6 +22,13 @@ namespace Chess {
        "#rnbqkbnr#",
        "##########"};
 
+int winner;
+bool pickup, whiteMove;
+point pre_pointer, pointer, target;
+
+#include "chessRules.h"
+
+namespace Chess {
     void drawBoard() {
         std::ifstream file((const std::string)"Board.txt");
 
@@ -36,7 +42,7 @@ namespace Chess {
             std::cout << ' ' << board[i][j] << ' ';
         }
 
-        gotoxy(7, 10), color(BRIGHTWHITE);
+        gotoXY(16, 54), color(BRIGHTWHITE);
         std::cout << "[ ]";
     }
 
@@ -56,10 +62,6 @@ namespace Chess {
         }
     }
 
-    int winner;
-    bool pickup, whiteMove;
-    point pre_pointer, pointer, target;
-
     bool aValidMove() {
         if (pointer == target) return false;
         if (board[pointer.x][pointer.y] != ' ' && board[target.x][target.y] != ' ') {
@@ -67,7 +69,19 @@ namespace Chess {
             if (board[pointer.x][pointer.y] <  'a' && board[target.x][target.y] <  'a') return false;
         }
 
-        return true;
+        gotoxy(9, 0), color(BLACK);
+        std::cout << "target: " << target.x << ' ' << target.y << '\n';
+        std::cout << "pointer: " << pointer.x << ' ' << pointer.y << '\n';
+
+        switch (board[target.x][target.y]) {
+            case 'p': case 'P': return chessRules::Pawn(board[target.x][target.y] >= 'a');
+            case 'b': case 'B': return chessRules::Bishop(board[target.x][target.y] >= 'a');
+            case 'n': case 'N': return chessRules::Knight(board[target.x][target.y] >= 'a');
+            case 'r': case 'R': return chessRules::Rook(board[target.x][target.y] >= 'a');
+            case 'q': case 'Q': return chessRules::Queen(board[target.x][target.y] >= 'a');
+            case 'k': case 'K': return chessRules::King(board[target.x][target.y] >= 'a');
+            default: return false;
+        }
     }
 
     void main() {
@@ -110,7 +124,7 @@ namespace Chess {
                         if (not aValidMove()) break;
 
                         pickup = false; whiteMove = whiteMove ^ 1;
-                        gotoxy(target.x, target.y), color(NULL);
+                        gotoxy(target.x, target.y), color(0);
                         std::cout << "   ";
 
                         if (board[pointer.x][pointer.y] == 'K') winner = 1;
@@ -129,6 +143,6 @@ namespace Chess {
 
         gotoxy(9, 1), color(BLACK);
         std::cout << (winner == 1 ? "White's" : "Black's") << " is winner!!!\tPress any key to exit.\n";
-        char stop; stop = getch();
+        getch();
     }
 }

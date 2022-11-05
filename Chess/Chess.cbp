@@ -27,6 +27,7 @@
 		<Unit filename="Board_2.txt" />
 		<Unit filename="Chess.h" />
 		<Unit filename="Setting.h" />
+		<Unit filename="chessRules.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="redefineCommand.h" />
 		<Extensions />
