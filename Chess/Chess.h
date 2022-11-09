@@ -1,14 +1,12 @@
 #include <conio.h>
 #include <fstream>
-#include <cstring>
+#include <string>
 #include <utility>
+#include <set>
 
 #define point std::pair<int, int>
 #define x first
 #define y second
-
-const int dx[] = {-1, 1, 0, 0};
-const int dy[] = {0, 0, -1, 1};
 
 std::string board[] = {
        "##########",
@@ -22,9 +20,23 @@ std::string board[] = {
        "#rnbqkbnr#",
        "##########"};
 
+int status[][10] = {
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, 0},
+        {0, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, 0},
+        {0, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, BRIGHTWHITE, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
 int winner;
 bool pickup, whiteMove;
-point pre_pointer, pointer, target;
+point pointer, target, enPassant;
+
+std::set<point> validMoves;
 
 #include "chessRules.h"
 
@@ -38,7 +50,7 @@ namespace Chess {
         file.close();
 
         for (int i = 1; i <= 8; i++) for (int j = 1; j <= 8; j++) {
-            gotoxy(i, j), color(board[i][j] >= 'a' ? BRIGHTWHITE : BLACK);
+            gotoxy(i, j), color(status[i][j]);
             std::cout << ' ' << board[i][j] << ' ';
         }
 
@@ -63,24 +75,26 @@ namespace Chess {
     }
 
     bool aValidMove() {
-        if (pointer == target) return false;
-        if (board[pointer.x][pointer.y] != ' ' && board[target.x][target.y] != ' ') {
-            if (board[pointer.x][pointer.y] >= 'a' && board[target.x][target.y] >= 'a') return false;
-            if (board[pointer.x][pointer.y] <  'a' && board[target.x][target.y] <  'a') return false;
+        return validMoves.find(pointer) != validMoves.end();
+    }
+
+    void findValidMove() {
+        switch (board[target.x][target.y]) {
+            case 'p': case 'P': chessRules::Pawn();     break;
+            case 'b': case 'B': chessRules::Bishop();   break;
+            case 'n': case 'N': chessRules::Knight();   break;
+            case 'r': case 'R': chessRules::Rook();     break;
+            case 'q': case 'Q': chessRules::Queen();    break;
+            case 'k': case 'K': chessRules::King();     break;
+            default:;
         }
 
-        gotoxy(9, 0), color(BLACK);
-        std::cout << "target: " << target.x << ' ' << target.y << '\n';
-        std::cout << "pointer: " << pointer.x << ' ' << pointer.y << '\n';
+        for (auto A : validMoves) {
+            if (board[A.x][A.y] == ' ') {
+                board[A.x][A.y] = 'x', status[A.x][A.y] = GREEN;
+            } else if (board[A.x][A.y] != 'x') status[A.x][A.y] = RED;
 
-        switch (board[target.x][target.y]) {
-            case 'p': case 'P': return chessRules::Pawn(board[target.x][target.y] >= 'a');
-            case 'b': case 'B': return chessRules::Bishop(board[target.x][target.y] >= 'a');
-            case 'n': case 'N': return chessRules::Knight(board[target.x][target.y] >= 'a');
-            case 'r': case 'R': return chessRules::Rook(board[target.x][target.y] >= 'a');
-            case 'q': case 'Q': return chessRules::Queen(board[target.x][target.y] >= 'a');
-            case 'k': case 'K': return chessRules::King(board[target.x][target.y] >= 'a');
-            default: return false;
+            gotoxy(A.x, A.y), color(status[A.x][A.y]), std::cout << ' ' << board[A.x][A.y] << ' ';
         }
     }
 
@@ -89,57 +103,109 @@ namespace Chess {
 
         winner = 0;
         pickup = false, whiteMove = true;
-        pointer = std::make_pair(1, 1);
+        pointer = std::make_pair(1, 1), enPassant = std::make_pair(0, 0);
 
-        while (not winner) {
+        while (winner == false) {
             gotoxy(pointer.x, pointer.y);
             color(whiteMove ? BRIGHTWHITE : BLACK); std::cout << '[';
-            color(pickup && pointer == target ? GREEN : board[pointer.x][pointer.y] >= 'a' ? BRIGHTWHITE : BLACK); std::cout << board[pointer.x][pointer.y];
+            color(status[pointer.x][pointer.y]);    std::cout << board[pointer.x][pointer.y];
             color(whiteMove ? BRIGHTWHITE : BLACK); std::cout << ']';
 
-            int event = getEvent(); switch (event) {
-                case 0 ... 3: {
-                    if (board[pointer.x + dx[event]][pointer.y + dy[event]] != '#') {
-                        pre_pointer = pointer;
-                        pointer = std::make_pair(pointer.x + dx[event], pointer.y + dy[event]);
+            int event = getEvent();
+            if (event <= 3) {
+                const int dx[] = {-1, 1, 0, 0};
+                const int dy[] = {0, 0, -1, 1};
+                
+                if (board[pointer.x + dx[event]][pointer.y + dy[event]] != '#') {
+                    gotoxy(pointer.x, pointer.y), color(status[pointer.x][pointer.y]);
+                    std::cout << ' ' << board[pointer.x][pointer.y] << ' ';
 
-                        gotoxy(pre_pointer.x, pre_pointer.y), color(pickup && pre_pointer == target ? GREEN : board[pre_pointer.x][pre_pointer.y] >= 'a' ? BRIGHTWHITE : BLACK);
-                        std::cout << ' ' << board[pre_pointer.x][pre_pointer.y] << ' ';
-                    }
-
-                    break;
+                    pointer = std::make_pair(pointer.x + dx[event], pointer.y + dy[event]);
                 }
-                case 4: {
-                    if (not pickup) {
-                        if (board[pointer.x][pointer.y] == ' ') break;
+            } else if (event == 4) {
+                if (pickup == false) {
+                    if (board[pointer.x][pointer.y] == ' ') continue;
 
-                        if ((board[pointer.x][pointer.y] >= 'a' && whiteMove == false) or (board[pointer.x][pointer.y] < 'a' && whiteMove)) break;
+                    if ((status[pointer.x][pointer.y] == BRIGHTWHITE && whiteMove == false) || (status[pointer.x][pointer.y] == BLACK && whiteMove)) continue;
 
-                        pickup = true; target = pointer;
-                        gotoxy(pointer.x, pointer.y), color(GREEN);
-                        std::cout << ' ' << board[pointer.x][pointer.y] << ' ';
+                    pickup = true; target = pointer;
+                    gotoxy(pointer.x, pointer.y), color(status[pointer.x][pointer.y] = GREEN);
+                    std::cout << ' ' << board[pointer.x][pointer.y] << ' ';
+
+                    findValidMove();
+                } else {
+                    if (target == pointer) {
+                        pickup = false;
+
+                        status[target.x][target.y] = (board[target.x][target.y] <= 'Z' ? BLACK : BRIGHTWHITE);
+
+                        for (auto A : validMoves) {
+                            if (board[A.x][A.y] == 'x') {
+                                board[A.x][A.y] = ' ';
+                                status[A.x][A.y] = 0;
+                            } else if (board[A.x][A.y] != ' ') {
+                                status[A.x][A.y] = (board[A.x][A.y] <= 'Z' ? BLACK : BRIGHTWHITE);
+                            }
+
+                            gotoxy(A.x, A.y), color(status[A.x][A.y]), std::cout << ' ' << board[A.x][A.y] << ' ';
+                        }
+
+                        validMoves.clear();
                     } else {
-                        if (target == pointer) pickup = false;
+                        if (aValidMove() == false) continue;
 
-                        if (not aValidMove()) break;
+                        for (auto A : validMoves) {
+                            if (board[A.x][A.y] == 'x') {
+                                board[A.x][A.y] = ' ';
+                                status[A.x][A.y] = 0;
+                            } else if (board[A.x][A.y] != ' ') {
+                                status[A.x][A.y] = (board[A.x][A.y] <= 'Z' ? BLACK : BRIGHTWHITE);
+                            }
+
+                            gotoxy(A.x, A.y), color(status[A.x][A.y]), std::cout << ' ' << board[A.x][A.y] << ' ';
+                        }
+
+                        validMoves.clear();
+
+                        if (pointer.x == enPassant.x + 1 && pointer.y == enPassant.y) {
+                            gotoxy(enPassant.x, enPassant.y), color(BLACK);
+                            board[enPassant.x][enPassant.y] = ' ';
+                            std::cout << "   ";
+                        }
+                        if (pointer.x == enPassant.x - 1 && pointer.y == enPassant.y) {
+                            gotoxy(enPassant.x, enPassant.y), color(BLACK);
+                            board[enPassant.x][enPassant.y] = ' ';
+                            std::cout << "   ";
+                        }
 
                         pickup = false; whiteMove = whiteMove ^ 1;
-                        gotoxy(target.x, target.y), color(0);
+                        gotoxy(target.x, target.y), color(0);   
                         std::cout << "   ";
 
                         if (board[pointer.x][pointer.y] == 'K') winner = 1;
                         if (board[pointer.x][pointer.y] == 'k') winner = 2;
 
+                        if (board[target.x][target.y] == 'p' || board[target.x][target.y] == 'P') enPassant = pointer;
+                        else enPassant = std::make_pair(0, 0);
+
+                        gotoxy(9, 0), color(BLACK); 
+                        std::cout << enPassant.x << ' ' << enPassant.y << '\n';
+
+                        status[pointer.x][pointer.y] = (board[target.x][target.y] <= 'Z' ? BLACK : BRIGHTWHITE);
                         board[pointer.x][pointer.y] = board[target.x][target.y];
                         board[target.x][target.y] = ' ';
                     }
-
-                    break;
                 }
-
-                default: break;
+            } else if (event == 5) {
+                // will show menu;
+                exit(0);
             }
         }
+
+        gotoxy(pointer.x, pointer.y);
+        color(whiteMove ? BRIGHTWHITE : BLACK); std::cout << '[';
+        color(status[pointer.x][pointer.y]);    std::cout << board[pointer.x][pointer.y];
+        color(whiteMove ? BRIGHTWHITE : BLACK); std::cout << ']';
 
         gotoxy(9, 1), color(BLACK);
         std::cout << (winner == 1 ? "White's" : "Black's") << " is winner!!!\tPress any key to exit.\n";

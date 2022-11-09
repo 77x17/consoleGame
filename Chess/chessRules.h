@@ -1,52 +1,115 @@
 namespace chessRules {
-    bool isEnemy(point a, point b) {
-        if (board[a.x][a.y] == ' ' || board[b.x][b.y] == ' ') return false;
+    void Pawn() {
+        if ('A' <= board[target.x][target.y] && board[target.x][target.y] <= 'Z') {
+            if ('a' <= board[target.x + 1][target.y - 1] && board[target.x + 1][target.y - 1] <= 'z') validMoves.emplace(target.x + 1, target.y - 1);
+            if ('a' <= board[target.x + 1][target.y + 1] && board[target.x + 1][target.y + 1] <= 'z') validMoves.emplace(target.x + 1, target.y + 1);
 
-        if (board[a.x][a.y] >= 'a' && board[b.x][b.y] <  'a') return true;
-        if (board[a.x][a.y] <  'a' && board[b.x][b.y] >= 'a') return true;
+            if (board[target.x + 1][target.y] == ' ') {
+                validMoves.emplace(target.x + 1, target.y);
+                if (target.x == 2 && board[target.x + 2][target.y] == ' ') validMoves.emplace(target.x + 2, target.y);
+            }
 
-        return false;
-    }
-
-    bool Pawn(bool whiteMove) {
-        if (whiteMove) {
-            if (target.y == pointer.y) {
-                if (target.x == 7) if (pointer.x == 6 || pointer.x == 5) return true;
-                if (target.x != 7) if (pointer.x == target.x - 1) return true;
-            } else if (target.x - 1 == pointer.x) {
-                if (target.y - 1 == pointer.y && isEnemy(target, pointer)) return true;
-                if (target.y + 1 == pointer.y && isEnemy(target, pointer)) return true;
+            if (enPassant == std::make_pair(target.x, target.y - 1)) {
+                if ('a' <= board[target.x][target.y - 1] && board[target.x][target.y - 1] <= 'z') validMoves.emplace(target.x + 1, target.y - 1);
+            }
+            if (enPassant == std::make_pair(target.x, target.y + 1)) {
+                if ('a' <= board[target.x][target.y + 1] && board[target.x][target.y + 1] <= 'z') validMoves.emplace(target.x + 1, target.y + 1);
             }
         } else {
-            if (target.y == pointer.y) {
-                if (target.x == 2) if (pointer.x == 3 || pointer.x == 4) return true;
-                if (target.x != 2) if (pointer.x == target.x + 1) return true;
-            } else if (target.x + 1 == pointer.x) {
-                if (target.y - 1 == pointer.y && isEnemy(target, pointer)) return true;
-                if (target.y + 1 == pointer.y && isEnemy(target, pointer)) return true;
+            if ('A' <= board[target.x - 1][target.y - 1] && board[target.x - 1][target.y - 1] <= 'Z') validMoves.emplace(target.x - 1, target.y - 1);
+            if ('A' <= board[target.x - 1][target.y + 1] && board[target.x - 1][target.y + 1] <= 'Z') validMoves.emplace(target.x - 1, target.y + 1);
+
+            if (board[target.x - 1][target.y] == ' ') {
+                validMoves.emplace(target.x - 1, target.y);
+                if (target.x == 7 && board[target.x - 2][target.y] == ' ') validMoves.emplace(target.x - 2, target.y);
+            }
+
+            if (enPassant == std::make_pair(target.x, target.y - 1)) {
+                if ('A' <= board[target.x][target.y - 1] && board[target.x][target.y - 1] <= 'Z') validMoves.emplace(target.x - 1, target.y - 1);
+            }
+            if (enPassant == std::make_pair(target.x, target.y + 1)) {
+                if ('A' <= board[target.x][target.y + 1] && board[target.x][target.y + 1] <= 'Z') validMoves.emplace(target.x - 1, target.y + 1);
             }
         }
-
-        return false;
     }
 
-    bool Bishop(bool whiteMove) {
-        return false;
+    void Bishop() {
+        const int dx[] = {-1, 1, -1, 1};
+        const int dy[] = {-1, 1, 1, -1};
+
+        for (int i = 0; i <= 3; i++) {
+            point temp = target;
+            while (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
+
+            if ('a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
+                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.emplace(temp.x, temp.y);
+            } else {
+                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.emplace(temp.x, temp.y);
+            }
+        }
     }
 
-    bool Knight(bool whiteMove) {
-        return false;
+    void Knight() {
+        const int dx[] = {-1, -2, -2, -1, 1, 2, 2, 1};
+        const int dy[] = {-2, -1, 1, 2, 2, 1, -1, -2};
+
+        for (int i = 0; i <= 7; i++) if (1 <= target.x + dx[i] && target.x + dx[i] <= 8 && 1 <= target.y + dy[i] && target.y + dy[i] <= 8) { 
+            point temp = target; 
+
+            if (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
+            else if ('a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
+                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.emplace(temp.x, temp.y);
+            } else {
+                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.emplace(temp.x, temp.y);
+            }
+        }
     }
 
-    bool Rook(bool whiteMove) {
-        return false;
+    void Rook() {
+        const int dx[] = {-1, 1, 0, 0};
+        const int dy[] = {0, 0, -1, 1};
+
+        for (int i = 0; i <= 3; i++) {
+            point temp = target;
+            while (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
+
+            if ('a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
+                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.emplace(temp.x, temp.y);
+            } else {
+                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.emplace(temp.x, temp.y);
+            }
+        }
     }
 
-    bool Queen(bool whiteMove) {
-        return false;
+    void Queen() {
+        const int dx[] = {-1, 1, -1, 1, -1, 1, 0, 0};
+        const int dy[] = {-1, 1, 1, -1, 0, 0, -1, 1};
+
+        for (int i = 0; i <= 7; i++) {
+            point temp = target;
+            while (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
+
+            if ('a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
+                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.emplace(temp.x, temp.y);
+            } else {
+                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.emplace(temp.x, temp.y);
+            }
+        }
     }
 
-    bool King(bool whiteMove) {
-        return false;
+    void King() {
+        const int dx[] = {-1, 1, -1, 1, -1, 1, 0, 0};
+        const int dy[] = {-1, 1, 1, -1, 0, 0, -1, 1};
+
+        for (int i = 0; i <= 7; i++) {
+            point temp = target;
+            if (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
+
+            if ('a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
+                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.emplace(temp.x, temp.y);
+            } else {
+                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.emplace(temp.x, temp.y);
+            }
+        }
     }
 }
