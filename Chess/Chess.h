@@ -33,7 +33,7 @@ int status[][10] = {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
 int winner;
-bool pickup, whiteMove;
+bool pickup, whiteMove, castling[2];
 point pointer, target, enPassant;
 
 std::set<point> validMoves;
@@ -102,7 +102,7 @@ namespace Chess {
         drawBoard();
 
         winner = 0;
-        pickup = false, whiteMove = true;
+        pickup = false, whiteMove = true, castling[0] = castling[1] = true;
         pointer = std::make_pair(1, 1), enPassant = std::make_pair(0, 0);
 
         while (winner == false) {
@@ -167,17 +167,6 @@ namespace Chess {
 
                         validMoves.clear();
 
-                        if (pointer.x == enPassant.x + 1 && pointer.y == enPassant.y) {
-                            gotoxy(enPassant.x, enPassant.y), color(BLACK);
-                            board[enPassant.x][enPassant.y] = ' ';
-                            std::cout << "   ";
-                        }
-                        if (pointer.x == enPassant.x - 1 && pointer.y == enPassant.y) {
-                            gotoxy(enPassant.x, enPassant.y), color(BLACK);
-                            board[enPassant.x][enPassant.y] = ' ';
-                            std::cout << "   ";
-                        }
-
                         pickup = false; whiteMove = whiteMove ^ 1;
                         gotoxy(target.x, target.y), color(0);   
                         std::cout << "   ";
@@ -185,12 +174,47 @@ namespace Chess {
                         if (board[pointer.x][pointer.y] == 'K') winner = 1;
                         if (board[pointer.x][pointer.y] == 'k') winner = 2;
 
+                        if (whiteMove && pointer.x == enPassant.x + 1 && pointer.y == enPassant.y) {
+                            gotoxy(enPassant.x, enPassant.y), color(BLACK);
+                            board[enPassant.x][enPassant.y] = ' ';
+                            std::cout << "   ";
+                        } 
+
+                        if (whiteMove == false && pointer.x == enPassant.x - 1 && pointer.y == enPassant.y) {
+                            gotoxy(enPassant.x, enPassant.y), color(BLACK);
+                            board[enPassant.x][enPassant.y] = ' ';
+                            std::cout << "   ";
+                        }
+
+                        if (board[target.x][target.y] == 'p' || board[target.x][target.y] == 'P') {
+                            if (pointer.x == 1) board[target.x][target.y] = 'q';
+                            if (pointer.x == 8) board[target.x][target.y] = 'Q';
+                        }
+
                         if (board[target.x][target.y] == 'p' || board[target.x][target.y] == 'P') enPassant = pointer;
                         else enPassant = std::make_pair(0, 0);
 
-                        gotoxy(9, 0), color(BLACK); 
-                        std::cout << enPassant.x << ' ' << enPassant.y << '\n';
+                        if ((castling[0] && board[target.x][target.y] == 'k') || (castling[1] && board[target.x][target.y] == 'K')) {
+                            if (target.y - pointer.y >= 2) {
+                                status[target.x][pointer.y + 1] = status[target.x][1];
+                                board[target.x][pointer.y + 1] = board[target.x][1]; board[target.x][1] = ' ';
+                                gotoxy(target.x, pointer.y + 1), color(status[target.x][1]);
+                                std::cout << ' ' << board[target.x][1] << ' ';
+                                gotoxy(target.x, 1); std::cout << "   ";
+                            }
 
+                            if (pointer.y - target.y >= 2) {
+                                status[target.x][pointer.y - 1] = status[target.x][8];
+                                board[target.x][pointer.y - 1] = board[target.x][8]; board[target.x][8] = ' ';
+                                gotoxy(target.x, pointer.y - 1), color(status[target.x][8]);
+                                std::cout << ' ' << board[target.x][pointer.y - 1] << ' ';
+                                gotoxy(target.x, 8); std::cout << "   ";
+                            }
+                        }
+
+                        if (board[target.x][target.y] == 'k' || board[target.x][target.y] == 'r') castling[0] = false;
+                        if (board[target.x][target.y] == 'K' || board[target.x][target.y] == 'R') castling[1] = false;
+                        
                         status[pointer.x][pointer.y] = (board[target.x][target.y] <= 'Z' ? BLACK : BRIGHTWHITE);
                         board[pointer.x][pointer.y] = board[target.x][target.y];
                         board[target.x][target.y] = ' ';

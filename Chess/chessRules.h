@@ -42,9 +42,9 @@ namespace chessRules {
             while (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
 
             if ('a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
-                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.emplace(temp.x, temp.y);
+                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.insert(temp);
             } else {
-                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.emplace(temp.x, temp.y);
+                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.insert(temp);
             }
         }
     }
@@ -58,9 +58,9 @@ namespace chessRules {
 
             if (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
             else if ('a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
-                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.emplace(temp.x, temp.y);
+                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.insert(temp);
             } else {
-                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.emplace(temp.x, temp.y);
+                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.insert(temp);
             }
         }
     }
@@ -74,9 +74,9 @@ namespace chessRules {
             while (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
 
             if ('a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
-                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.emplace(temp.x, temp.y);
+                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.insert(temp);
             } else {
-                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.emplace(temp.x, temp.y);
+                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.insert(temp);
             }
         }
     }
@@ -90,25 +90,43 @@ namespace chessRules {
             while (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
 
             if ('a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
-                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.emplace(temp.x, temp.y);
+                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.insert(temp);
             } else {
-                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.emplace(temp.x, temp.y);
+                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.insert(temp);
             }
         }
     }
 
     void King() {
-        const int dx[] = {-1, 1, -1, 1, -1, 1, 0, 0};
-        const int dy[] = {-1, 1, 1, -1, 0, 0, -1, 1};
+        const int dx[] = {-1, 1, -1, 1, -1, 1, 0, 0,  0, 0};
+        const int dy[] = {-1, 1, 1, -1, 0, 0, -1, 1, -1, 1};
 
         for (int i = 0; i <= 7; i++) {
             point temp = target;
             if (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
 
             if ('a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
-                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.emplace(temp.x, temp.y);
+                if ('A' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'Z') validMoves.insert(temp);
             } else {
-                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.emplace(temp.x, temp.y);
+                if ('a' <= board[temp.x][temp.y] && board[temp.x][temp.y] <= 'z') validMoves.insert(temp);
+            }
+        }
+        
+        for (int i = 8; i <= 9; i++) {
+            point temp = target;
+            while (board[temp.x += dx[i]][temp.y += dy[i]] == ' ');
+
+            if (castling[0] && 'a' <= board[target.x][target.y] && board[target.x][target.y] <= 'z') {
+                if (board[temp.x][temp.y] && board[temp.x][temp.y] == 'r') {
+                    temp = target;
+                    while (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
+                }
+            }
+            if (castling[1] && 'A' <= board[target.x][target.y] && board[target.x][target.y] <= 'Z') {
+                if (board[temp.x][temp.y] && board[temp.x][temp.y] == 'R') {
+                    temp = target;
+                    while (board[temp.x += dx[i]][temp.y += dy[i]] == ' ') validMoves.insert(temp);
+                }
             }
         }
     }
